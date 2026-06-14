@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pizarra · Trivial de fútbol europeo y selecciones (50)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Karla:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --grass:#0D3B2E;      /* verde pizarra táctica */
+  --grass2:#0A2F25;
+  --chalk:#F4F7F2;      /* blanco tiza */
+  --ink:#10312A;
+  --yellow:#FFD23F;     /* tarjeta amarilla */
+  --red:#E3403A;        /* tarjeta roja */
+  --good:#2F9E63;
+  --badc:#D14438;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:
+    radial-gradient(circle at 50% -80px, #14543F 0%, transparent 60%),
+    var(--grass);
+  color:var(--chalk);
+  font-family:'Karla',system-ui,sans-serif;
+  min-height:100vh;display:flex;justify-content:center;
+}
+.wrap{width:100%;max-width:480px;padding:14px 14px 36px;display:flex;flex-direction:column;gap:13px}
+.hidden{display:none !important}
+
+/* ============ MARCADOR (cabecera) ============ */
+.board{
+  border:2px solid rgba(244,247,242,.5);
+  border-radius:12px;
+  padding:10px 14px 12px;
+  background:rgba(0,0,0,.22);
+  position:relative;
+  overflow:hidden;
+}
+.board::before{ /* círculo central de pizarra táctica */
+  content:"";position:absolute;right:-34px;top:-34px;width:90px;height:90px;
+  border:1.5px solid rgba(244,247,242,.16);border-radius:50%;
+}
+.board .row1{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.brand{font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:1px;color:var(--yellow)}
+.minute{
+  font-family:'Archivo Black',sans-serif;font-size:16px;color:var(--chalk);white-space:nowrap;
+}
+.minute small{display:block;font-family:'Karla',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:2px;color:var(--yellow);text-align:right}
+.pitchbar{
+  margin-top:10px;height:12px;border-radius:99px;position:relative;
+  background:rgba(244,247,242,.14);
+}
+.pitchbar::before{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:1.5px;background:rgba(244,247,242,.35)} /* medio campo */
+.pitchbar i{
+  position:absolute;left:0;top:0;bottom:0;border-radius:99px;width:0%;
+  background:linear-gradient(90deg,var(--yellow),#ffe58a);transition:width .4s ease;
+}
+.pitchbar b{
+  position:absolute;top:50%;transform:translate(-50%,-50%);left:0%;
+  font-size:15px;transition:left .4s ease;line-height:1;
+}
+.statusrow{display:flex;justify-content:space-between;font-weight:800;letter-spacing:1px;font-size:13.5px;margin-top:9px}
+.streak{color:var(--yellow)}
+
+/* ============ FICHA DE PREGUNTA ============ */
+.qcard{
+  background:var(--chalk);color:var(--ink);
+  border-radius:16px;padding:18px 18px 15px;
+  box-shadow:0 10px 24px rgba(0,0,0,.35);
+  display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center;
+}
+.crest{
+  width:92px;height:100px;flex:none;
+  background:var(--grass);
+  clip-path:polygon(0 0, 100% 0, 100% 62%, 50% 100%, 0 62%); /* escudo */
+  display:flex;align-items:center;justify-content:center;
+  padding-bottom:12px;
+}
+.crest svg{width:50px;height:50px;stroke:var(--yellow);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.cat{font-family:'Archivo Black',sans-serif;font-size:10.5px;letter-spacing:3px;color:var(--red)}
+.qtext{font-size:17.5px;font-weight:600;line-height:1.45}
+.pts{font-size:11.5px;font-weight:800;letter-spacing:2px;color:rgba(16,49,42,.5)}
+
+/* ============ OPCIONES ============ */
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{
+  width:100%;text-align:left;
+  background:rgba(244,247,242,.06);
+  border:1.5px dashed rgba(244,247,242,.5); /* línea de tiza */
+  color:var(--chalk);
+  border-radius:12px;padding:13px 15px;
+  font-family:'Karla',sans-serif;font-size:16px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;gap:11px;
+  transition:transform .06s ease;
+}
+.opt:active{transform:scale(.985)}
+.opt .key{font-family:'Archivo Black',sans-serif;color:var(--yellow);width:24px;flex:none;font-size:13px}
+.opt.correct{background:var(--good);border:1.5px solid var(--good);color:#fff}
+.opt.correct .key{color:#fff}
+.opt.wrong{background:var(--badc);border:1.5px solid var(--badc);color:#fff}
+.opt.wrong .key{color:#fff}
+.opt.faded{opacity:.4}
+.opt:disabled{cursor:default}
+
+.fb{border-radius:12px;padding:11px 14px;font-size:15px;font-weight:600;line-height:1.4;display:none}
+.fb.show{display:block}
+.fb.good{background:rgba(47,158,99,.2);border:1.5px solid var(--good)}
+.fb.bad{background:rgba(209,68,56,.18);border:1.5px solid var(--badc)}
+.next{
+  font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:2px;
+  background:var(--yellow);color:var(--ink);border:none;border-radius:12px;
+  padding:14px;width:100%;cursor:pointer;
+  box-shadow:0 4px 0 #c19c1f;
+}
+.next:active{transform:translateY(2px);box-shadow:0 2px 0 #c19c1f}
+
+/* ============ PANTALLAS ============ */
+.screen{display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;padding:30px 10px}
+.screen h1{font-family:'Archivo Black',sans-serif;font-size:clamp(30px,9vw,42px);color:var(--yellow);line-height:1.12;text-transform:uppercase}
+.screen h1 em{font-style:normal;color:var(--chalk)}
+.screen p{font-size:15.5px;line-height:1.55;opacity:.92;max-width:375px}
+.bigbtn{
+  font-family:'Archivo Black',sans-serif;font-size:17px;letter-spacing:1px;
+  background:var(--red);color:#fff;
+  border:none;border-radius:14px;padding:15px 34px;cursor:pointer;
+  box-shadow:0 5px 0 #99281f;
+}
+.bigbtn:active{transform:translateY(2px);box-shadow:0 3px 0 #99281f}
+.score-final{font-family:'Archivo Black',sans-serif;font-size:66px;color:var(--yellow);line-height:1}
+.score-final small{display:block;font-family:'Karla',sans-serif;font-size:14px;letter-spacing:3px;font-weight:800;opacity:.85;color:var(--chalk)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- INICIO -->
+  <div class="screen" id="start">
+    <h1>La Pizarra<br><em>del Míster</em></h1>
+    <p><b>50 preguntas difíciles</b> (pero no imposibles) sobre la historia del fútbol europeo y de las selecciones: Copas de Europa, Champions, Mundiales, Eurocopas y leyendas. Toca la respuesta correcta entre 4 opciones.</p>
+    <p style="font-size:13.5px;opacity:.75">+10 por acierto · racha de 3 o más: +5 extra · cada pregunta es un minuto: 50' de partido</p>
+    <button class="bigbtn" id="startBtn">🟡 PITIDO INICIAL</button>
+  </div>
+
+  <!-- JUEGO -->
+  <div id="game" class="hidden" style="display:flex;flex-direction:column;gap:13px">
+    <div class="board">
+      <div class="row1">
+        <div class="brand">LA PIZARRA</div>
+        <div class="minute"><span id="num">1'</span><small id="half">1ª PARTE</small></div>
+      </div>
+      <div class="pitchbar"><i id="bar"></i><b id="ball">⚽</b></div>
+      <div class="statusrow">
+        <div>PUNTOS: <span id="score">0</span></div>
+        <div class="streak" id="streak"></div>
+      </div>
+    </div>
+
+    <div class="qcard">
+      <div class="crest" id="crest"></div>
+      <div class="cat" id="cat"></div>
+      <div class="qtext" id="qtext"></div>
+      <div class="pts" id="qpts">VALE 10 PUNTOS</div>
+    </div>
+
+    <div class="opts" id="opts"></div>
+    <div class="fb" id="fb"></div>
+    <button class="next hidden" id="nextBtn">SIGUIENTE JUGADA ▶</button>
+  </div>
+
+  <!-- FINAL -->
+  <div class="screen hidden" id="end">
+    <h1>Pitido<br><em>Final</em></h1>
+    <div class="score-final"><span id="finalScore">0</span><small>PUNTOS</small></div>
+    <p id="finalMsg"></p>
+    <p style="font-size:13.5px;opacity:.75" id="finalStats"></p>
+    <button class="bigbtn" id="againBtn">🔁 PRÓRROGA: OTRA PARTIDA</button>
+  </div>
+
+</div>
+
+<script>
+/* =================== ICONOS (dibujados dentro del archivo, cargan siempre) =================== */
+const ICONS = {
+ trophy:'<svg viewBox="0 0 24 24"><path d="M8 3h8v6a4 4 0 0 1-8 0V3z"/><path d="M8 4.5H4.5c0 3.5 1.5 5 3.5 5.3M16 4.5h3.5c0 3.5-1.5 5-3.5 5.3"/><path d="M12 13v3.5M9 20.5h6M10 16.5h4l.7 4h-5.4l.7-4z"/><circle cx="5" cy="7" r="2.4"/><circle cx="19" cy="7" r="2.4"/></svg>',
+ ball:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5l3.8 2.8-1.5 4.5h-4.6l-1.5-4.5L12 7.5z"/><path d="M12 3v4.5M19.5 8l-3.7 2.3M17 19l-2.7-4.2M7 19l2.7-4.2M4.5 8l3.7 2.3"/></svg>',
+ boot:'<svg viewBox="0 0 24 24"><path d="M4 9l8 1.5c1 .2 1.7 1 2.4 2 1 1.4 2.6 2.5 5.6 2.8v2.2H4V9z"/><path d="M4 17.5v2M8 17.5v2M12 17.5v2M16 17.5v2M8.5 9.8L10 8M11 10.3l1.5-1.8"/></svg>',
+ glove:'<svg viewBox="0 0 24 24"><path d="M7 12V6.5a1.4 1.4 0 0 1 2.8 0V11M9.8 10.5V5a1.4 1.4 0 0 1 2.8 0v5.5M12.6 10.5V6a1.4 1.4 0 0 1 2.8 0v6.5"/><path d="M15.4 12.5l1.6-2c.6-.7 1.8-.5 2.1.4.2.6 0 1.2-.4 1.7L15 17.5c-.8 1-2 1.5-3.3 1.5H10c-1.7 0-3-1.3-3-3v-4"/><path d="M8 21h7"/></svg>',
+ shirt:'<svg viewBox="0 0 24 24"><path d="M9 3.5L4 6l2 4 2-1v11.5h8V9l2 1 2-4-5-2.5a3 3 0 0 1-6 0z"/><path d="M12 12v5"/></svg>',
+ star:'<svg viewBox="0 0 24 24"><path d="M12 2.8l2.8 5.9 6.2.8-4.6 4.4 1.2 6.3L12 17.2l-5.6 3 1.2-6.3L3 9.5l6.2-.8L12 2.8z"/></svg>',
+ flag:'<svg viewBox="0 0 24 24"><path d="M6 21.5V3.5"/><path d="M6 4.5c3-2 6 2 12 0v8c-6 2-9-2-12 0"/><path d="M9.5 4.8v7.4M13.5 5.6v7.4"/></svg>',
+ whistle:'<svg viewBox="0 0 24 24"><path d="M14 9h6.5v3.2l-4 1.3A5.5 5.5 0 1 1 9.5 9H14z"/><circle cx="9.5" cy="14.5" r="1.6"/><path d="M9.5 5.5V3M13 6l1.5-2M6 6L4.5 4"/></svg>'
+};
+
+/* =================== PREGUNTAS (50, nivel difícil) =================== */
+const QS = [
+ /* ---- Copa de Europa / Champions ---- */
+ {c:'COPA DE EUROPA', i:'trophy', q:'¿A qué equipo ganó el Real Madrid la primera final de la Copa de Europa (1956)?', ok:'Stade de Reims', w:['Benfica','Fiorentina','Milan']},
+ {c:'COPA DE EUROPA', i:'ball', q:'En el 7-3 al Eintracht (final de 1960), ¿quién marcó cuatro goles?', ok:'Ferenc Puskás', w:['Alfredo Di Stéfano','Paco Gento','Raymond Kopa']},
+ {c:'COPA DE EUROPA', i:'trophy', q:'¿Cuál fue el primer club británico campeón de Europa (1967)?', ok:'Celtic', w:['Manchester United','Liverpool','Rangers']},
+ {c:'COPA DE EUROPA', i:'trophy', q:'¿Qué club ganó tres Copas de Europa seguidas (1971-73) antes que el Bayern?', ok:'Ajax', w:['Inter de Milán','Benfica','Feyenoord']},
+ {c:'COPA DE EUROPA', i:'whistle', q:'La tragedia de Heysel (1985) ocurrió en la final entre la Juventus y...', ok:'Liverpool', w:['Manchester United','Nottingham Forest','Arsenal']},
+ {c:'COPA DE EUROPA', i:'glove', q:'¿Qué equipo rumano ganó al Barça la final de 1986 en los penaltis?', ok:'Steaua de Bucarest', w:['Dinamo de Bucarest','Estrella Roja','Rapid de Bucarest']},
+ {c:'COPA DE EUROPA', i:'trophy', q:'¿Qué club inglés ganó dos Copas de Europa seguidas (1979 y 1980) con Brian Clough?', ok:'Nottingham Forest', w:['Aston Villa','Leeds United','Everton']},
+ {c:'COPA DE EUROPA', i:'trophy', q:'¿Qué club inglés ganó la Copa de Europa de 1982 al Bayern?', ok:'Aston Villa', w:['Nottingham Forest','Liverpool','Tottenham']},
+ {c:'COPA DE EUROPA', i:'ball', q:'¿Quién marcó el gol de la primera Copa de Europa del Barça (Wembley, 1992)?', ok:'Ronald Koeman', w:['Hristo Stoichkov','Michael Laudrup','Julio Salinas']},
+ {c:'CHAMPIONS', i:'trophy', q:'¿Qué club ganó la primera edición con el nombre «Champions League» (1992-93)?', ok:'Olympique de Marsella', w:['Milan','Ajax','Borussia Dortmund']},
+ {c:'CHAMPIONS', i:'ball', q:'¿Quién marcó el gol de la victoria del United en el 93\u2019 de la final de 1999?', ok:'Solskjær', w:['Sheringham','Andy Cole','Dwight Yorke']},
+ {c:'CHAMPIONS', i:'glove', q:'¿Qué equipo remontó un 0-3 al descanso en la final de Estambul 2005?', ok:'Liverpool', w:['Milan','Chelsea','Deportivo de La Coruña']},
+ {c:'CHAMPIONS', i:'trophy', q:'¿Con qué club ganó Mourinho su primera Champions (2004)?', ok:'Oporto', w:['Chelsea','Inter de Milán','Benfica']},
+ {c:'CHAMPIONS', i:'ball', q:'¿Quién empató en el minuto 93 la final de Lisboa 2014 (la Décima)?', ok:'Sergio Ramos', w:['Gareth Bale','Cristiano Ronaldo','Marcelo']},
+ {c:'CHAMPIONS', i:'ball', q:'¿Quién es el máximo goleador histórico de la Champions?', ok:'Cristiano Ronaldo', w:['Messi','Lewandowski','Benzema']},
+ {c:'CHAMPIONS', i:'star', q:'¿Quién marcó 17 goles en una sola edición de Champions (2013-14), todavía récord?', ok:'Cristiano Ronaldo', w:['Messi','Lewandowski','Haaland']},
+ {c:'COPA DE EUROPA', i:'shirt', q:'¿Qué extremo español ganó seis Copas de Europa con el Madrid entre 1956 y 1966?', ok:'Paco Gento', w:['Amancio','Luis Del Sol','Pirri']},
+ {c:'CLUBES', i:'trophy', q:'¿Qué entrenador dirigía al Milan bicampeón de Europa de 1989 y 1990?', ok:'Arrigo Sacchi', w:['Fabio Capello','Giovanni Trapattoni','Nereo Rocco']},
+ {c:'CLUBES', i:'whistle', q:'¿Qué entrenador dirigía a la «Grande Inter» de los años 60?', ok:'Helenio Herrera', w:['Nereo Rocco','Vittorio Pozzo','Giovanni Trapattoni']},
+ {c:'CLUBES', i:'trophy', q:'¿Quién ganó la primera Copa de la UEFA (1972)?', ok:'Tottenham', w:['Leeds United','Liverpool','Borussia Mönchengladbach']},
+ {c:'CLUBES', i:'trophy', q:'¿Qué club ganó más veces la extinta Recopa de Europa?', ok:'FC Barcelona', w:['Milan','Anderlecht','Chelsea']},
+ {c:'CLUBES', i:'trophy', q:'¿Qué club ha ganado más veces la Copa de la UEFA / Europa League?', ok:'Sevilla', w:['Inter de Milán','Juventus','Atlético de Madrid']},
+ {c:'CLUBES', i:'whistle', q:'¿Qué club fue descendido a la Serie B en 2006 por el escándalo del «Calciopoli»?', ok:'Juventus', w:['Milan','Lazio','Fiorentina']},
+ {c:'CLUBES', i:'shirt', q:'¿Cómo se conocía a la generación del Madrid de Butragueño, Míchel y Sanchís?', ok:'La Quinta del Buitre', w:['Los Galácticos','Los Vikingos','La Máquina Blanca']},
+ {c:'LEYENDAS', i:'shirt', q:'¿En qué club brilló Eusébio, «la Pantera Negra»?', ok:'Benfica', w:['Oporto','Sporting de Lisboa','Anderlecht']},
+ {c:'LEYENDAS', i:'shirt', q:'¿En qué único club jugó Paolo Maldini toda su carrera?', ok:'Milan', w:['Inter de Milán','Juventus','Roma']},
+ {c:'LEYENDAS', i:'star', q:'¿Quién ganó el primer Balón de Oro de la historia (1956)?', ok:'Stanley Matthews', w:['Di Stéfano','Raymond Kopa','Puskás']},
+ {c:'LEYENDAS', i:'glove', q:'¿Quién es el único portero que ha ganado el Balón de Oro (1963)?', ok:'Lev Yashin', w:['Gordon Banks','Dino Zoff','Sepp Maier']},
+ {c:'LEYENDAS', i:'star', q:'¿Cuántos Balones de Oro ganó Johan Cruyff?', ok:'Tres', w:['Dos','Cuatro','Uno']},
+ {c:'LEYENDAS', i:'shirt', q:'¿Con qué tres selecciones llegó a jugar Alfredo Di Stéfano?', ok:'Argentina, Colombia y España', w:['Argentina, Uruguay y España','Argentina, Italia y España','Solo Argentina y España']},
+ /* ---- Mundiales ---- */
+ {c:'MUNDIALES', i:'flag', q:'¿Qué selección dio la campanada en el «Maracanazo» de 1950?', ok:'Uruguay', w:['Argentina','Paraguay','Chile']},
+ {c:'MUNDIALES', i:'flag', q:'En el «Milagro de Berna» (1954), la RFA ganó la final a la gran favorita...', ok:'Hungría', w:['Brasil','Uruguay','Austria']},
+ {c:'MUNDIALES', i:'ball', q:'¿Quién marcó un hat-trick en la final del Mundial de 1966?', ok:'Geoff Hurst', w:['Bobby Charlton','Jimmy Greaves','Martin Peters']},
+ {c:'MUNDIALES', i:'ball', q:'¿Quién marcó de penalti, en el minuto 2, el gol de Holanda en la final de 1974?', ok:'Johan Neeskens', w:['Johan Cruyff','Johnny Rep','Ruud Krol']},
+ {c:'MUNDIALES', i:'star', q:'¿Quién fue el Bota de Oro del Mundial de España 82?', ok:'Paolo Rossi', w:['Karl-Heinz Rummenigge','Zico','Maradona']},
+ {c:'MUNDIALES', i:'glove', q:'¿Qué portero inglés sufrió la «mano de Dios» de Maradona en 1986?', ok:'Peter Shilton', w:['Gordon Banks','Ray Clemence','David Seaman']},
+ {c:'MUNDIALES', i:'ball', q:'¿Quién marcó los dos goles de cabeza de Francia en la final del Mundial 98?', ok:'Zidane', w:['Thierry Henry','Emmanuel Petit','Djorkaeff']},
+ {c:'MUNDIALES', i:'whistle', q:'¿Qué francés estrelló su penalti en la tanda de la final del Mundial 2006?', ok:'Trezeguet', w:['Zidane','Henry','Wiltord']},
+ {c:'MUNDIALES', i:'ball', q:'¿Quién dio la asistencia a Iniesta en el gol del Mundial 2010?', ok:'Cesc Fàbregas', w:['Xavi','Fernando Torres','Jesús Navas']},
+ {c:'MUNDIALES', i:'ball', q:'¿Quién marcó el gol de Alemania en la final del Mundial 2014?', ok:'Mario Götze', w:['Thomas Müller','André Schürrle','Miroslav Klose']},
+ {c:'MUNDIALES', i:'star', q:'¿Quién es el máximo goleador histórico de los Mundiales (16 goles)?', ok:'Miroslav Klose', w:['Ronaldo Nazário','Gerd Müller','Pelé']},
+ {c:'MUNDIALES', i:'flag', q:'¿Cuál es la única selección que ha jugado todos los Mundiales?', ok:'Brasil', w:['Alemania','Argentina','Italia']},
+ {c:'MUNDIALES', i:'shirt', q:'¿Qué leyenda nunca llegó a disputar un Mundial?', ok:'Alfredo Di Stéfano', w:['Johan Cruyff','Ferenc Puskás','Franz Beckenbauer']},
+ /* ---- Eurocopas ---- */
+ {c:'EUROCOPAS', i:'flag', q:'¿A qué selección ganó España la final de la Eurocopa de 1964?', ok:'La URSS', w:['Hungría','Yugoslavia','Italia']},
+ {c:'EUROCOPAS', i:'whistle', q:'Panenka inventó su penalti en la final de la Euro 76. ¿Con qué selección jugaba?', ok:'Checoslovaquia', w:['Yugoslavia','Hungría','Polonia']},
+ {c:'EUROCOPAS', i:'flag', q:'¿Qué selección ganó la Euro 92 tras ser repescada por la exclusión de Yugoslavia?', ok:'Dinamarca', w:['Suecia','Grecia','Países Bajos']},
+ {c:'EUROCOPAS', i:'whistle', q:'¿Qué entrenador llevó a Grecia al milagro de la Euro 2004?', ok:'Otto Rehhagel', w:['Guus Hiddink','Fernando Santos','Berti Vogts']},
+ {c:'EUROCOPAS', i:'flag', q:'¿A qué selección ganó España (gol de Torres) la final de la Euro 2008?', ok:'Alemania', w:['Italia','Países Bajos','Rusia']},
+ {c:'EUROCOPAS', i:'ball', q:'¿Quién marcó el gol de la victoria de España en la final de la Euro 2024?', ok:'Oyarzabal', w:['Nico Williams','Lamine Yamal','Dani Olmo']},
+ {c:'EUROCOPAS', i:'star', q:'¿Quién es el máximo goleador histórico de las Eurocopas?', ok:'Cristiano Ronaldo', w:['Michel Platini','Alan Shearer','Antoine Griezmann']}
+];
+
+/* =================== MOTOR =================== */
+let order=[], idx=0, score=0, hits=0, streak=0, locked=false;
+const $=id=>document.getElementById(id);
+const KEYS=['A','B','C','D'];
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function loadQ(){
+  locked=false;
+  const it=order[idx];
+  $('num').textContent=(idx+1)+"'";
+  $('half').textContent= idx<25 ? '1ª PARTE' : '2ª PARTE';
+  const pct=idx/order.length*100;
+  $('bar').style.width=pct+'%';
+  $('ball').style.left=Math.min(98,Math.max(2,pct))+'%';
+  $('score').textContent=score;
+  $('streak').textContent= streak>=2 ? '🔥 RACHA ×'+streak : '';
+  $('crest').innerHTML=ICONS[it.i]||ICONS.ball;
+  $('cat').textContent=it.c;
+  $('qtext').textContent=it.q;
+  $('qpts').textContent= streak>=3 ? 'VALE 10 + 5 DE RACHA' : 'VALE 10 PUNTOS';
+  $('fb').className='fb'; $('fb').textContent='';
+  $('nextBtn').classList.add('hidden');
+
+  const options=shuffle([it.ok, ...it.w]);
+  const box=$('opts'); box.innerHTML='';
+  options.forEach((txt,i)=>{
+    const b=document.createElement('button');
+    b.className='opt';
+    const k=document.createElement('span'); k.className='key'; k.textContent=KEYS[i];
+    const t=document.createElement('span'); t.textContent=txt;
+    b.appendChild(k); b.appendChild(t);
+    b.onclick=()=>answer(b,txt,it);
+    box.appendChild(b);
+  });
+}
+
+function answer(btn,txt,it){
+  if(locked) return;
+  locked=true;
+  const buttons=[...document.querySelectorAll('.opt')];
+  buttons.forEach(b=>b.disabled=true);
+  const fb=$('fb');
+  if(txt===it.ok){
+    btn.classList.add('correct');
+    buttons.filter(b=>b!==btn).forEach(b=>b.classList.add('faded'));
+    streak++;
+    const pts=10+(streak>=3?5:0);
+    score+=pts; hits++;
+    fb.className='fb show good';
+    fb.textContent='⚽ ¡GOOOL! +'+pts+' puntos'+(streak>=3?' (racha de '+streak+')':'');
+  }else{
+    btn.classList.add('wrong');
+    buttons.forEach(b=>{
+      if(b.lastChild.textContent===it.ok) b.classList.add('correct');
+      else if(b!==btn) b.classList.add('faded');
+    });
+    streak=0;
+    fb.className='fb show bad';
+    fb.textContent='🟥 Fuera. Era: '+it.ok+'.';
+  }
+  $('score').textContent=score;
+  $('nextBtn').textContent=(idx+1<order.length)?'SIGUIENTE JUGADA ▶':'VER RESULTADO ★';
+  $('nextBtn').classList.remove('hidden');
+}
+
+function next(){ idx++; if(idx>=order.length) end(); else loadQ(); }
+
+function end(){
+  $('game').classList.add('hidden');
+  $('end').classList.remove('hidden');
+  $('finalScore').textContent=score;
+  $('finalStats').textContent='Aciertos: '+hits+' de '+order.length;
+  const pct=hits/order.length;
+  let m;
+  if(pct>=0.85) m='Balón de Oro del trivial. Te sabes hasta los penaltis de Duckadam. 🏆';
+  else if(pct>=0.6) m='Titular indiscutible: nivel tertuliano de El Chiringuito, pero con datos de verdad.';
+  else if(pct>=0.35) m='Buen partido, pero te han pillado a la contra en las difíciles.';
+  else m='Hoy tocaba banquillo. Repasa el VAR de la historia y pide la revancha.';
+  $('finalMsg').textContent=m;
+}
+
+function start(){
+  order=shuffle(QS.slice());
+  idx=0; score=0; hits=0; streak=0;
+  $('start').classList.add('hidden');
+  $('end').classList.add('hidden');
+  $('game').classList.remove('hidden');
+  loadQ();
+}
+
+$('startBtn').onclick=start;
+$('againBtn').onclick=start;
+$('nextBtn').onclick=next;
+</script>
+</body>
+</html>
